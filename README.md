@@ -12,13 +12,14 @@ tensorboardX
 
 ### Usage
 
-```python
-python main.py --task {clf, detect}
-```
+#### object detection
+- dataset: PASCAL VOC2007 & 2012
+- model: SSD (Single Shot Multibox Detector)
+- metric: mAP
 
-#### task
-1. image classfication: ```--task clf``` 
-2. object detection: ```--task detect```
+```shell
+python detection.py
+```
 
 
 ### References
