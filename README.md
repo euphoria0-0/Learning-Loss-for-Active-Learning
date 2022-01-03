@@ -24,6 +24,7 @@ python main.py --task {clf, detect}
 ### References
 
 - https://github.com/Mephisto405/Learning-Loss-for-Active-Learning
+- https://github.com/amdegroot/ssd.pytorch
 
 
 
