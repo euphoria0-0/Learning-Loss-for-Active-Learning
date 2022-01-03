@@ -1,6 +1,9 @@
-from ssd_pytorch.data import *
-from ssd_pytorch.utils.augmentations import SSDAugmentation
 import torch
+import numpy as np
+import cv2
+
+from data.augmentations import SSDAugmentation
+from .voc0712 import *
 
 
 voc_means = (104, 117, 123)
@@ -33,13 +36,13 @@ voc_cfg = {
 def get_data(args):
     dataset = {}
     dataset['train'] = VOCDetection(root=args.dataset_path,
-                                    transform=SSDAugmentation(voc_cfg['min_dim'], MEANS))
+                                    transform=SSDAugmentation(voc_cfg['min_dim'], voc_means))
     dataset['unlabeled'] = VOCDetection(root=args.dataset_path,
-                                        transform=BaseTransform(300, MEANS),
+                                        transform=BaseTransform(300, voc_means),
                                         target_transform=VOCAnnotationTransform())
     dataset['test'] = VOCDetection(root=args.dataset_path,
                                    image_sets=[('2007', 'test')],
-                                   transform=BaseTransform(300, MEANS),
+                                   transform=BaseTransform(300, voc_means),
                                    target_transform=VOCAnnotationTransform())
     return dataset
 
@@ -64,3 +67,19 @@ def detection_collate(batch):
         imgs.append(sample[0])
         targets.append(torch.FloatTensor(sample[1]))
     return torch.stack(imgs, 0), targets
+
+
+def base_transform(image, size, mean):
+    x = cv2.resize(image, (size, size)).astype(np.float32)
+    x -= mean
+    x = x.astype(np.float32)
+    return x
+
+
+class BaseTransform:
+    def __init__(self, size, mean):
+        self.size = size
+        self.mean = np.array(mean, dtype=np.float32)
+
+    def __call__(self, image, boxes=None, labels=None):
+        return base_transform(image, self.size, self.mean), boxes, labels

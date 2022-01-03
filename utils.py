@@ -8,7 +8,7 @@ if sys.version_info[0] == 2:
 else:
     import xml.etree.ElementTree as ET
 
-from data import voc_classes
+from data.voc_data import voc_classes
 
 
 class Timer(object):

@@ -4,7 +4,7 @@ from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from data import detection_collate
+from data.voc_data import detection_collate
 
 
 class ActiveLearner:

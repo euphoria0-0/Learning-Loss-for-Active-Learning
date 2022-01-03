@@ -5,11 +5,9 @@ Learning Loss for Active Learning
 import argparse
 from tensorboardX import SummaryWriter
 
-from ssd_pytorch.ssd import build_ssd
-from train import *
-from data import *
+from data.voc_data import *
 from active_learner import *
-from model import lossnet
+from model import *
 from trainer import Trainer
 
 
@@ -58,35 +56,6 @@ def get_args():
     return args
 
 
-def get_model(args, phase='train'):
-    if phase == 'train':
-        ssd_net = build_ssd('train', voc_cfg['min_dim'], args.nClass)
-
-        if args.resume:
-            ssd_net.load_weights(args.resume)
-        else:
-            vgg_weights = torch.load('./ssd_pytorch/weights/vgg16_reducedfc.pth')
-            ssd_net.vgg.load_state_dict(vgg_weights)
-            # initialize
-            ssd_net.extras.apply(weights_init)
-            ssd_net.loc.apply(weights_init)
-            ssd_net.conf.apply(weights_init)
-    else:
-        ssd_net = build_ssd('test', 300, args.nClass)  # initialize SSD
-        ssd_net.load_state_dict(torch.load('./ssd_pytorch/weights/VOC.pth'))
-
-    ssd_net = ssd_net.to(args.device)
-    loss_net = lossnet.LossNet()
-    loss_net = loss_net.to(args.device)
-
-    if ',' in args.gpu_id:
-        ssd_net = torch.nn.DataParallel(ssd_net)
-        loss_net = torch.nn.DataParallel(loss_net)
-        torch.backends.cudnn.benchmark = True
-
-    return {'backbone': ssd_net, 'module': loss_net}
-
-
 
 if __name__ == '__main__':
     args = get_args()
@@ -117,6 +86,12 @@ if __name__ == '__main__':
 
         # set model
         model = get_model(args)
+        model['backbone'] = model['backbone'].to(args.device)
+        model['module'] = model['module'].to(args.device)
+        if ',' in args.gpu_id:
+            model['backbone'] = torch.nn.DataParallel(model['backbone'])
+            model['module'] = torch.nn.DataParallel(model['module'])
+            torch.backends.cudnn.benchmark = True
 
         # set active learner
         active_learner = LearningLoss(dataset, args)
@@ -128,6 +103,8 @@ if __name__ == '__main__':
 
         # test / inference
         model = get_model(args, phase='test')
+        model['backbone'] = model['backbone'].to(args.device)
+        model['module'] = model['module'].to(args.device)
         trainer.test(model, round=round, phase='test')
 
         # query

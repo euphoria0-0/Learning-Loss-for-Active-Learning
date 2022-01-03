@@ -1,11 +1,10 @@
 from torch import optim
 from tqdm import tqdm
 
-from ssd_pytorch.layers.modules import MultiBoxLoss
-from ssd_pytorch.data import *
-
+from model.layers.modules import MultiBoxLoss
 from model import lossnet
 from utils import *
+import torch
 
 
 class Trainer:
