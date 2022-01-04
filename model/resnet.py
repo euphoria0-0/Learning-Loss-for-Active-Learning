@@ -82,38 +82,36 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        self.features = []
         out = F.relu(self.bn1(self.conv1(x)))
 
         out1 = self.layer1(out)
-        self.features.append(out1)
         out2 = self.layer2(out1)
-        self.features.append(out2)
         out3 = self.layer3(out2)
-        self.features.append(out3)
         out4 = self.layer4(out3)
-        self.features.append(out4)
 
         out = F.avg_pool2d(out4, 4)
         out = out.view(out.size(0), -1)
         out = self.linear(out)
+
+        self.features = [out1, out2, out3, out4]
+
         return out
 
     def get_features(self):
         return self.features
 
 
-def ResNet18(num_classes = 10, ll=False):
-    return ResNet(BasicBlock, [2,2,2,2], num_classes, ll=ll)
+def ResNet18(num_classes = 10):
+    return ResNet(BasicBlock, [2,2,2,2], num_classes)
 
-def ResNet34(num_classes = 10, ll=False):
-    return ResNet(BasicBlock, [3,4,6,3], num_classes, ll=ll)
+def ResNet34(num_classes = 10):
+    return ResNet(BasicBlock, [3,4,6,3], num_classes)
 
-def ResNet50(num_classes = 10, ll=False):
-    return ResNet(Bottleneck, [3,4,6,3], num_classes, ll=ll)
+def ResNet50(num_classes = 10):
+    return ResNet(Bottleneck, [3,4,6,3], num_classes)
 
-def ResNet101(num_classes = 10, ll=False):
-    return ResNet(Bottleneck, [3,4,23,3], num_classes, ll=ll)
+def ResNet101(num_classes = 10):
+    return ResNet(Bottleneck, [3,4,23,3], num_classes)
 
-def ResNet152(num_classes = 10, ll=False):
-    return ResNet(Bottleneck, [3,8,36,3], num_classes, ll=ll)
+def ResNet152(num_classes = 10):
+    return ResNet(Bottleneck, [3,8,36,3], num_classes)

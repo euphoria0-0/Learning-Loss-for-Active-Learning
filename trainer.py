@@ -229,7 +229,7 @@ class ClassificationTrainer:
     def train_epoch(self, epoch):
         train_loss, correct, total = 0., 0, 0
 
-        for input, labels, _ in self.dataloaders['train']:
+        for input, labels in self.dataloaders['train']:
             input, labels = input.to(self.device), labels.to(self.device)
             self.optimizer['backbone'].zero_grad()
             self.optimizer['module'].zero_grad()
@@ -283,9 +283,9 @@ class ClassificationTrainer:
 
         with torch.no_grad():
             test_loss, correct, total = 0., 0, 0
-            for input, labels, _ in self.dataloaders[phase]:
+            for input, labels in self.dataloaders[phase]:
                 input, labels = input.to(self.device), labels.to(self.device)
-                output, _ = self.model['backbone'](input)
+                output = self.model['backbone'](input)
                 _, preds = torch.max(output.data, 1)
 
                 correct += preds.eq(labels).sum().cpu().data.numpy()
