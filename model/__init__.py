@@ -15,7 +15,7 @@ def get_ssd_model(args, phase='train'):
         if args.resume:
             ssd_net.load_weights(args.resume)
         else:
-            vgg_weights = torch.load('./ssd_pytorch/weights/vgg16_reducedfc.pth')
+            vgg_weights = torch.load('./weights/vgg16_reducedfc.pth')
             ssd_net.vgg.load_state_dict(vgg_weights)
             # initialize
             ssd_net.extras.apply(weights_init)
@@ -23,7 +23,7 @@ def get_ssd_model(args, phase='train'):
             ssd_net.conf.apply(weights_init)
     else:
         ssd_net = build_ssd('test', voc_cfg['min_dim'], args.nClass)  # initialize SSD
-        ssd_net.load_state_dict(torch.load('./results/VOC.pth'))
+        ssd_net.load_state_dict(torch.load('./weights/VOC.pth'))
 
     loss_net = LossNet(feature_sizes=[512, 1024, 512, 256, 256, 256],
                        num_channels=[512, 1024, 512, 256, 256, 256],

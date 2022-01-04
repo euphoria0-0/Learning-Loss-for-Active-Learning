@@ -7,7 +7,7 @@ from model.lossnet import LossPredLoss
 from utils import *
 
 
-class Trainer:
+class DetectionTrainer:
     def __init__(self, model, dataloaders, writer, args):
         self.device = args.device
         self.model = model

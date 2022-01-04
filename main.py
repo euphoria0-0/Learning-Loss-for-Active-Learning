@@ -8,7 +8,7 @@ from tensorboardX import SummaryWriter
 
 from data import voc, cifar
 from active_learner import *
-from trainer import Trainer
+from trainer import DetectionTrainer
 from model import *
 
 
@@ -20,7 +20,7 @@ def get_args():
 
     parser.add_argument('--dataset', help='dataset', type=str, default='VOC0712')
     parser.add_argument('--dataset_path', help='data path', type=str, default='D:/data/detection/VOCdevkit')
-    parser.add_argument('--save_path', help='save path', type=str, default='./results/')
+    parser.add_argument('--save_path', help='save path', type=str, default='./weights/')
 
     parser.add_argument('--num_trial', type=int, default=1, help='number of trials')
     parser.add_argument('--num_epoch', type=int, default=300, help='number of epochs')
@@ -81,6 +81,13 @@ def get_inference_model(args, trained_model):
         model = {'backbone': test_model['backbone'], 'module': trained_model['module']}
     return model
 
+def get_trainer(args, model, dataloaders, writer):
+    if args.task == 'clf':
+        trainer = get_resnet_model(args)
+    elif args.task == 'detection':
+        trainer = DetectionTrainer(model, dataloaders, writer, args)
+    return trainer
+
 
 if __name__ == '__main__':
     args = get_args()
@@ -124,7 +131,7 @@ if __name__ == '__main__':
             dataloaders = active_learner.get_current_dataloaders()
 
             # train
-            trainer = Trainer(model, dataloaders, writer, args)
+            trainer = get_trainer(args, model, dataloaders, writer)
             trainer.train()
 
             # test / inference
