@@ -234,7 +234,8 @@ class ClassificationTrainer:
             self.optimizer['backbone'].zero_grad()
             self.optimizer['module'].zero_grad()
 
-            output, features = self.model['backbone'](input)
+            output = self.model['backbone'](input)
+            features = self.model['backbone'].get_features()
 
             target_loss = self.criterion(output, labels.long())
             _, preds = torch.max(output.data, 1)
