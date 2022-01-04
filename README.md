@@ -12,20 +12,28 @@ tensorboardX
 
 ### Usage
 
+```shell
+python main.py --task {clf OR detection}
+```
+
+#### image classification
+- dataset: CIFAR10 & CIFAR100
+- model: ResNet
+- metric: Accuracy
+
 #### object detection
 - dataset: PASCAL VOC2007 & 2012
 - model: SSD (Single Shot Multibox Detector)
 - metric: mAP
 
-```shell
-python detection.py
-```
+
 
 
 ### References
 
 - https://github.com/Mephisto405/Learning-Loss-for-Active-Learning
 - https://github.com/amdegroot/ssd.pytorch
+- https://github.com/kuangliu/pytorch-cifar
 
 
 
