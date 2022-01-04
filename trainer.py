@@ -1,10 +1,10 @@
+import torch
 from torch import optim
 from tqdm import tqdm
 
 from model.layers.modules import MultiBoxLoss
-from model import lossnet
+from model.lossnet import LossPredLoss
 from utils import *
-import torch
 
 
 class Trainer:
@@ -80,7 +80,7 @@ class Trainer:
 
             #backbone_loss = torch.sum(target_loss) / target_loss.size(0)
             backbone_loss = target_loss
-            module_loss = lossnet.LossPredLoss(pred_loss, target_loss, margin=1.0)
+            module_loss = LossPredLoss(pred_loss, target_loss, margin=1.0)
             loss = backbone_loss + self.args.weights * module_loss
 
             loss.backward()

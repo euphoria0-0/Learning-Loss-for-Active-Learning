@@ -1,6 +1,6 @@
 '''
 Reference:
-https://github.com/Mephisto405/Learning-Loss-for-Active-Learning
+    https://github.com/Mephisto405/Learning-Loss-for-Active-Learning
 '''
 
 import torch.nn as nn

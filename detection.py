@@ -1,8 +1,9 @@
 '''
 Learning Loss for Active Learning
-
 '''
 import argparse
+import os
+
 from tensorboardX import SummaryWriter
 
 from data.voc_data import *
@@ -71,6 +72,7 @@ if __name__ == '__main__':
 
     torch.set_default_tensor_type('torch.FloatTensor')
 
+    os.makedirs(args.save_path, exist_ok=True)
     writer = SummaryWriter()
 
     # load data

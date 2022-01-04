@@ -1,3 +1,7 @@
+'''
+Reference:
+    https://github.com/amdegroot/ssd.pytorch
+'''
 import os, sys
 import time
 import numpy as np

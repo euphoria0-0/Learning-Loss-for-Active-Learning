@@ -1,7 +1,7 @@
-import torch
-import numpy as np
-import cv2
-
+'''
+Reference:
+    https://github.com/amdegroot/ssd.pytorch
+'''
 from data.augmentations import SSDAugmentation
 from .voc0712 import *
 
