@@ -2,19 +2,18 @@
 Reference:
     https://github.com/amdegroot/ssd.pytorch
 '''
-from data.augmentations import SSDAugmentation
+from .augmentations import SSDAugmentation
 from .voc0712 import *
 
 
 voc_means = (104, 117, 123)
 
-voc_classes = (  # always index 0
-    'aeroplane', 'bicycle', 'bird', 'boat',
-    'bottle', 'bus', 'car', 'cat', 'chair',
-    'cow', 'diningtable', 'dog', 'horse',
-    'motorbike', 'person', 'pottedplant',
-    'sheep', 'sofa', 'train', 'tvmonitor')
-
+voc_classes = VOC_CLASSES #(  # always index 0
+    # 'aeroplane', 'bicycle', 'bird', 'boat',
+    # 'bottle', 'bus', 'car', 'cat', 'chair',
+    # 'cow', 'diningtable', 'dog', 'horse',
+    # 'motorbike', 'person', 'pottedplant',
+    # 'sheep', 'sofa', 'train', 'tvmonitor')
 
 # SSD300 CONFIGS
 voc_cfg = {
@@ -33,7 +32,7 @@ voc_cfg = {
 }
 
 
-def get_data(args):
+def get_voc_data(args):
     dataset = {}
     dataset['train'] = VOCDetection(root=args.dataset_path,
                                     transform=SSDAugmentation(voc_cfg['min_dim'], voc_means))

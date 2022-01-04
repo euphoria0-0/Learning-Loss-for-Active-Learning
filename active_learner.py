@@ -4,7 +4,7 @@ from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from data.voc_data import detection_collate
+from data.voc import detection_collate
 
 
 class ActiveLearner:
@@ -63,15 +63,21 @@ class RandomSampling(ActiveLearner):
 
 
 class LearningLoss(ActiveLearner):
-    def __init__(self, dataset, args):
+    def __init__(self, dataset, args, task='clf'):
         super().__init__(dataset, args)
-        #self.subset = args.subset
+        if task == 'clf':
+            self.subset = args.subset
+        elif task == 'detection':
+            self.subset = None
+            self.loader_args['collate_fn'] = detection_collate
 
     def query(self, nQuery, model):
-        #subset = np.random.choice(self.unlabeled_indices, self.subset, replace=False)
+        if self.subset is not None:
+            subset = np.random.choice(self.unlabeled_indices, self.subset, replace=False)
+        else:
+            subset = np.array(self.unlabeled_indices)
         unlabeled_loader = DataLoader(self.dataset['unlabeled'], **self.loader_args,
-                                      sampler=SubsetRandomSampler(self.unlabeled_indices),
-                                      collate_fn=detection_collate)
+                                      sampler=SubsetRandomSampler(subset))
         model['backbone'].eval()
         model['module'].eval()
 
@@ -89,5 +95,5 @@ class LearningLoss(ActiveLearner):
                 torch.cuda.empty_cache()
 
         arg = np.argsort(uncertainty.numpy())[-nQuery:]
-        query_indices = np.array(self.unlabeled_indices)[arg].tolist()
+        query_indices = subset[arg].tolist()
         self.update(query_indices)

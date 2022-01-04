@@ -1,7 +1,8 @@
 import torch
 from torch.autograd import Function
+
 from ..box_utils import decode, nms
-from data.voc_data import voc_cfg as cfg
+from data.voc import voc_cfg
 
 
 class Detect(Function):
@@ -32,7 +33,7 @@ class Detect(Function):
         if nms_thresh <= 0:
             raise ValueError('nms_threshold must be non negative.')
         self.conf_thresh = conf_thresh
-        self.variance = cfg['variance']
+        self.variance = voc_cfg['variance']
         """
         Args:
             loc_data: (tensor) Loc preds from loc layers

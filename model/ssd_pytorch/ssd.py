@@ -10,8 +10,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from data.voc_data import voc_cfg as voc
 from .ssd_layers import *
+from data.voc import voc_cfg
+
 
 
 class SSD(nn.Module):
@@ -36,7 +37,7 @@ class SSD(nn.Module):
         super(SSD, self).__init__()
         self.phase = phase
         self.num_classes = num_classes
-        self.cfg = voc#(coco, voc)[num_classes == 21]
+        self.cfg = voc_cfg #(coco, voc)[num_classes == 21]
         self.priorbox = PriorBox(self.cfg)
         self.priors = Variable(self.priorbox.forward(), volatile=True)
         self.size = size
@@ -115,12 +116,20 @@ class SSD(nn.Module):
             #                  self.num_classes)),                # conf preds
             #     self.priors.type(type(x.data))                  # default boxes
             # )
-            output = self.detect.apply(self.num_classes, 0, 200, 0.01, 0.45,
-                                       loc.view(loc.size(0), -1, 4).cpu(),  # loc preds
-                                       self.softmax(conf.view(conf.size(0), -1,
-                                                              self.num_classes)).cpu(),  # conf preds
-                                       self.priors.type(type(x.data))  # default boxes
-                                       )
+            if not self.priors.is_cuda:
+                output = self.detect.apply(self.num_classes, 0, 200, 0.01, 0.45,
+                                           loc.view(loc.size(0), -1, 4),  # loc preds
+                                           self.softmax(conf.view(conf.size(0), -1,
+                                                                  self.num_classes)),  # conf preds
+                                           self.priors.type(type(x.data)).cuda()  # default boxes
+                                           )
+            else:
+                output = self.detect.apply(self.num_classes, 0, 200, 0.01, 0.45,
+                                           loc.view(loc.size(0), -1, 4),  # loc preds
+                                           self.softmax(conf.view(conf.size(0), -1,
+                                                                  self.num_classes)),  # conf preds
+                                           self.priors.type(type(x.data))  # default boxes
+                                           )
         else:
             output = (
                 loc.view(loc.size(0), -1, 4),

@@ -3,7 +3,6 @@ Reference:
     https://github.com/amdegroot/ssd.pytorch
 '''
 import os, sys
-import time
 import numpy as np
 import pickle
 
@@ -12,66 +11,8 @@ if sys.version_info[0] == 2:
 else:
     import xml.etree.ElementTree as ET
 
-from data.voc_data import voc_classes
+from data.voc import voc_classes
 
-
-class Timer(object):
-    """A simple timer."""
-    def __init__(self):
-        self.total_time = 0.
-        self.calls = 0
-        self.start_time = 0.
-        self.diff = 0.
-        self.average_time = 0.
-
-    def tic(self):
-        # using time.time instead of time.clock because time time.clock
-        # does not normalize for multithreading
-        self.start_time = time.time()
-
-    def toc(self, average=True):
-        self.diff = time.time() - self.start_time
-        self.total_time += self.diff
-        self.calls += 1
-        self.average_time = self.total_time / self.calls
-        if average:
-            return self.average_time
-        else:
-            return self.diff
-
-
-def cycle(iterable):
-    while True:
-        for x in iterable:
-            yield x
-
-def get_output_dir(name, phase):
-    """Return the directory where experimental artifacts are placed.
-    If the directory does not exist, it is created.
-    A canonical path is built using the name from an imdb and a network
-    (if not None).
-    """
-    filedir = os.path.join(name, phase)
-    if not os.path.exists(filedir):
-        os.makedirs(filedir)
-    return filedir
-
-
-def write_voc_results_file(all_boxes, dataset, data_path):
-    for cls_ind, cls in enumerate(voc_classes):
-        #print('Writing {:s} VOC results file'.format(cls))
-        filename = get_voc_results_file_template(data_path, 'test', cls)
-        with open(filename, 'wt') as f:
-            for im_ind, index in enumerate(dataset.ids):
-                dets = all_boxes[cls_ind+1][im_ind]
-                if dets == []:
-                    continue
-                # the VOCdevkit expects 1-based indices
-                for k in range(dets.shape[0]):
-                    f.write('{:s} {:.3f} {:.1f} {:.1f} {:.1f} {:.1f}\n'.
-                            format(index[1], dets[k, -1],
-                                   dets[k, 0] + 1, dets[k, 1] + 1,
-                                   dets[k, 2] + 1, dets[k, 3] + 1))
 
 
 def do_python_eval(data_path, output_dir='output', use_07=True):
@@ -271,16 +212,6 @@ def print_results(aps):
     print('--------------------------------------------------------------')
 
 
-def get_voc_results_file_template(data_path, image_set, cls):
-    devkit_path = data_path + 'VOC2007'
-    # VOCdevkit/VOC2007/results/det_test_aeroplane.txt
-    filename = 'det_' + image_set + '_%s.txt' % (cls)
-    filedir = os.path.join(devkit_path, 'results')
-    if not os.path.exists(filedir):
-        os.makedirs(filedir)
-    path = os.path.join(filedir, filename)
-    return path
-
 
 def voc_ap(rec, prec, use_07_metric=True):
     """ ap = voc_ap(rec, prec, [use_07_metric])
@@ -314,3 +245,30 @@ def voc_ap(rec, prec, use_07_metric=True):
         # and sum (\Delta recall) * prec
         ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
     return ap
+
+
+def write_voc_results_file(all_boxes, dataset, data_path):
+    for cls_ind, cls in enumerate(voc_classes):
+        #print('Writing {:s} VOC results file'.format(cls))
+        filename = get_voc_results_file_template(data_path, 'test', cls)
+        with open(filename, 'wt') as f:
+            for im_ind, index in enumerate(dataset.ids):
+                dets = all_boxes[cls_ind+1][im_ind]
+                if dets == []:
+                    continue
+                # the VOCdevkit expects 1-based indices
+                for k in range(dets.shape[0]):
+                    f.write('{:s} {:.3f} {:.1f} {:.1f} {:.1f} {:.1f}\n'.
+                            format(index[1], dets[k, -1],
+                                   dets[k, 0] + 1, dets[k, 1] + 1,
+                                   dets[k, 2] + 1, dets[k, 3] + 1))
+
+def get_voc_results_file_template(data_path, image_set, cls):
+    devkit_path = data_path + 'VOC2007'
+    # VOCdevkit/VOC2007/results/det_test_aeroplane.txt
+    filename = 'det_' + image_set + '_%s.txt' % (cls)
+    filedir = os.path.join(devkit_path, '../results')
+    if not os.path.exists(filedir):
+        os.makedirs(filedir)
+    path = os.path.join(filedir, filename)
+    return path

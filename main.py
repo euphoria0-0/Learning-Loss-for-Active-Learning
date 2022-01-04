@@ -6,7 +6,7 @@ import argparse
 
 from tensorboardX import SummaryWriter
 
-from data.voc import *
+from data import voc, cifar
 from active_learner import *
 from trainer import Trainer
 from model import *
@@ -14,13 +14,15 @@ from model import *
 
 def get_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--task', type=str, default='clf', choices=['clf','detection'])
+
     parser.add_argument('--gpu_id', type=str, default='0', help='gpu cuda index')
 
     parser.add_argument('--dataset', help='dataset', type=str, default='VOC0712')
     parser.add_argument('--dataset_path', help='data path', type=str, default='D:/data/detection/VOCdevkit')
     parser.add_argument('--save_path', help='save path', type=str, default='./results/')
 
-    parser.add_argument('--num_trial', type=int, default=5, help='number of trials')
+    parser.add_argument('--num_trial', type=int, default=1, help='number of trials')
     parser.add_argument('--num_epoch', type=int, default=300, help='number of epochs')
 
     parser.add_argument('--batch_size', type=int, default=32, help='Batch size used for training only')
@@ -57,6 +59,28 @@ def get_args():
     return args
 
 
+def get_dataset(args):
+    if args.task == 'clf':
+        dataset = cifar.CIFARDataset(args)
+    elif args.task == 'detection':
+        dataset = voc.get_voc_data(args)
+    return dataset
+
+def get_model(args):
+    if args.task == 'clf':
+        model = get_resnet_model(args)
+    elif args.task == 'detection':
+        model = get_ssd_model(args)
+    return model
+
+def get_inference_model(args, trained_model):
+    if args.task == 'clf':
+        model = trained_model
+    elif args.task == 'detection':
+        test_model = get_ssd_model(args, phase='test')
+        model = {'backbone': test_model['backbone'], 'module': trained_model['module']}
+    return model
+
 
 if __name__ == '__main__':
     args = get_args()
@@ -76,33 +100,37 @@ if __name__ == '__main__':
     writer = SummaryWriter()
 
     # load data
-    dataset = get_voc_data(args)
+    dataset = get_dataset(args)
     args.nTrain = len(dataset['train'])
     args.nClass = 21
 
-    # active learning round
-    for round in range(len(args.query_size)):
-        nLabeled = args.query_size[round]
-        nQuery = args.query_size[round + 1] - args.query_size[round] if round < len(args.query_size) - 1 else 'X'
-        print(f'> round {round + 1}/{len(args.query_size)} Labeled {nLabeled} Query {nQuery}')
-
-        # set model
-        model = get_ssd_model(args)
+    # trial
+    for trial in range(args.num_trial):
+        print(f'>> TRIAL {trial + 1}/{args.num_trial}')
 
         # set active learner
-        active_learner = LearningLoss(dataset, args, task='detection')
-        dataloaders = active_learner.get_current_dataloaders()
+        active_learner = LearningLoss(dataset, args, task=args.task)
 
-        # train
-        trainer = Trainer(model, dataloaders, writer, args)
-        trainer.train()
+        # active learning round
+        for round in range(len(args.query_size)):
+            nLabeled = args.query_size[round]
+            nQuery = args.query_size[round + 1] - args.query_size[round] if round < len(args.query_size) - 1 else 'X'
+            print(f'> ROUND {round + 1}/{len(args.query_size)} Labeled {nLabeled} Query {nQuery}')
 
-        # test / inference
-        model = get_ssd_model(args, phase='test')
+            # set model
+            model = get_model(args)
 
-        trainer.test(model, round=round, phase='test')
+            # get current data
+            dataloaders = active_learner.get_current_dataloaders()
 
-        # query
-        query_model = {'backbone': model['backbone'], 'module': trainer.model['module']}
-        if round < len(args.query_size) - 1:
-            active_learner.query(nQuery, query_model)
+            # train
+            trainer = Trainer(model, dataloaders, writer, args)
+            trainer.train()
+
+            # test / inference
+            inference_model = get_inference_model(args, trainer.model)
+            trainer.test(inference_model, round=round, phase='test')
+
+            # query
+            if round < len(args.query_size) - 1:
+                active_learner.query(nQuery, inference_model)
