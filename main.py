@@ -8,7 +8,7 @@ from tensorboardX import SummaryWriter
 
 from data import voc, cifar
 from active_learner import *
-from trainer import DetectionTrainer
+from trainer import *
 from model import *
 
 
@@ -83,7 +83,7 @@ def get_inference_model(args, trained_model):
 
 def get_trainer(args, model, dataloaders, writer):
     if args.task == 'clf':
-        trainer = get_resnet_model(args)
+        trainer = ClassificationTrainer(model, dataloaders, writer, args)
     elif args.task == 'detection':
         trainer = DetectionTrainer(model, dataloaders, writer, args)
     return trainer

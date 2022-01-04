@@ -16,6 +16,11 @@ tensorboardX
 python main.py --task {clf OR detection}
 ```
 
+-  task
+    - ```clf```: image classification
+    - ```detection```: object detection
+    
+
 #### image classification
 - dataset: CIFAR10 & CIFAR100
 - model: ResNet
