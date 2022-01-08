@@ -14,7 +14,7 @@ from model import *
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task', type=str, default='clf', choices=['clf','detection'])
+    parser.add_argument('--task', type=str, default='detection', choices=['clf','detection'])
 
     parser.add_argument('--gpu_id', type=str, default='0', help='gpu cuda index')
 
@@ -62,9 +62,12 @@ def get_args():
 def get_dataset(args):
     if args.task == 'clf':
         dataset = cifar.CIFARDataset(args)
+        args.nTrain, args.nClass = dataset.nTrain, dataset.nClass
+        dataset = dataset.dataset
     elif args.task == 'detection':
         dataset = voc.get_voc_data(args)
-    return dataset
+        args.nTrain, args.nClass = len(dataset['train']), 21
+    return dataset, args
 
 def get_model(args):
     if args.task == 'clf':
@@ -107,16 +110,14 @@ if __name__ == '__main__':
     writer = SummaryWriter()
 
     # load data
-    dataset = get_dataset(args)
-    args.nTrain = len(dataset['train'])
-    args.nClass = 21
+    dataset, args = get_dataset(args)
 
     # trial
     for trial in range(args.num_trial):
         print(f'>> TRIAL {trial + 1}/{args.num_trial}')
 
         # set active learner
-        active_learner = LearningLoss(dataset, args, task=args.task)
+        active_learner = LearningLoss(dataset, args)
 
         # active learning round
         for round in range(len(args.query_size)):

@@ -6,7 +6,7 @@ import torchvision.datasets as D
 class CIFARDataset:
     def __init__(self, args):
         self.data = args.dataset
-        self.data_dir = args.data_dir
+        self.data_dir = args.dataset_path
         self.al_method = 'learningloss' #args.al_method
 
         if self.data == 'CIFAR10':
@@ -26,15 +26,15 @@ class CIFARDataset:
     def _getData(self):
         self._data_transform()
         if self.data == 'CIFAR10':
-            self.dataset['train'] = D.CIFAR10(self.data_dir+'cifar10', train=True, transform=self.train_transform)
-            self.dataset['unlabeled'] = D.CIFAR10(self.data_dir+'cifar10', train=True, transform=self.test_transform)
-            self.dataset['test'] = D.CIFAR10(self.data_dir+'cifar10', train=False, transform=self.test_transform)
+            self.dataset['train'] = D.CIFAR10(self.data_dir+'cifar10', train=True, download=True, transform=self.train_transform)
+            self.dataset['unlabeled'] = D.CIFAR10(self.data_dir+'cifar10', train=True, download=True, transform=self.test_transform)
+            self.dataset['test'] = D.CIFAR10(self.data_dir+'cifar10', train=False, download=True, transform=self.test_transform)
             self.dataset['label'] = self.dataset['train'].targets
 
         elif self.data == 'CIFAR100':
-            self.dataset['train'] = D.CIFAR100(self.data_dir+'cifar100', train=True, transform=self.train_transform)
-            self.dataset['unlabeled'] = D.CIFAR100(self.data_dir+'cifar100', train=True, transform=self.test_transform)
-            self.dataset['test'] = D.CIFAR100(self.data_dir+'cifar100', train=False, transform=self.test_transform)
+            self.dataset['train'] = D.CIFAR100(self.data_dir+'cifar100', train=True, download=True, transform=self.train_transform)
+            self.dataset['unlabeled'] = D.CIFAR100(self.data_dir+'cifar100', train=True, download=True, transform=self.test_transform)
+            self.dataset['test'] = D.CIFAR100(self.data_dir+'cifar100', train=False, download=True, transform=self.test_transform)
             self.dataset['label'] = self.dataset['train'].targets
 
         # self.dataset['train'] = Dataset_idx(self.dataset['train'])

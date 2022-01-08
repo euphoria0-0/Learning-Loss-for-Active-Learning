@@ -202,7 +202,6 @@ class ClassificationTrainer:
         self.writer = writer
         self.num_epoch = args.num_epoch
         self.batch_size = args.batch_size
-        self.al_method = args.al_method
         self.args = args
 
         # loss function

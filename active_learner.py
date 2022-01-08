@@ -12,9 +12,11 @@ class ActiveLearner:
         self.dataset = dataset
         self.init_size = args.query_size[0]
         self.device = args.device
-        self.nTrain = len(dataset['train']) #args.nTrain
+        self.nTrain = args.nTrain
         self.args = args
         self.loader_args = {'batch_size': args.batch_size, 'pin_memory': True, 'shuffle': False}
+        if args.task == 'detection':
+            self.loader_args['collate_fn'] = detection_collate
         self._init_setting()
 
     def _init_setting(self):
@@ -22,18 +24,15 @@ class ActiveLearner:
         print(self.nTrain, self.init_size)
         self.labeled_indices = np.random.choice(total_indices, self.init_size, replace=False).tolist()
         self.unlabeled_indices = list(set(total_indices) - set(self.labeled_indices))
-        self.dataloaders = self._get_dataloaders(self.dataset)
+        self.dataloaders = self._get_dataloaders()
 
-    def _get_dataloaders(self, dataset):
+    def _get_dataloaders(self):
         dataloaders = {
-            'train': DataLoader(dataset['train'], **self.loader_args,
-                                sampler=SubsetRandomSampler(self.labeled_indices),
-                                collate_fn=detection_collate),
-            'unlabeled': DataLoader(dataset['unlabeled'], **self.loader_args,
-                                    sampler=SubsetRandomSampler(self.unlabeled_indices),
-                                    collate_fn=detection_collate),
-            'test': DataLoader(dataset['test'], batch_size=1000, pin_memory=True, shuffle=True,
-                               collate_fn=detection_collate)
+            'train': DataLoader(self.dataset['train'], **self.loader_args,
+                                sampler=SubsetRandomSampler(self.labeled_indices)),
+            'unlabeled': DataLoader(self.dataset['unlabeled'], **self.loader_args,
+                                    sampler=SubsetRandomSampler(self.unlabeled_indices)),
+            'test': DataLoader(self.dataset['test'], batch_size=1000, pin_memory=True, shuffle=True)
         }
         return dataloaders
 
@@ -41,7 +40,7 @@ class ActiveLearner:
         print(f'selected data: {sorted(query_indices)[:10]}')
         self.labeled_indices += query_indices
         self.unlabeled_indices = list(set(self.unlabeled_indices) - set(query_indices))
-        self.dataloaders = self._get_dataloaders(self.dataset)
+        self.dataloaders = self._get_dataloaders()
 
     def get_current_dataloaders(self):
         return self.dataloaders
@@ -63,13 +62,12 @@ class RandomSampling(ActiveLearner):
 
 
 class LearningLoss(ActiveLearner):
-    def __init__(self, dataset, args, task='clf'):
+    def __init__(self, dataset, args):
         super().__init__(dataset, args)
-        if task == 'clf':
+        if args.task == 'clf':
             self.subset = args.subset
-        elif task == 'detection':
+        elif args.task == 'detection':
             self.subset = None
-            self.loader_args['collate_fn'] = detection_collate
 
     def query(self, nQuery, model):
         if self.subset is not None:
