@@ -8,17 +8,20 @@ An unofficial PyTorch implementation of the paper [Learning Loss for Active Lear
 torch
 torchvision
 tensorboardX
+matplotlib
+tqdm
 ```
 
 ### Usage
 
 ```shell
-python main.py --task {clf OR detection}
+python main.py --task {clf OR detection OR hpe}
 ```
 
 -  task
     - ```clf```: image classification
     - ```detection```: object detection
+    - ```hpe```: human pose estimation
     
 
 #### image classification
@@ -27,8 +30,9 @@ python main.py --task {clf OR detection}
 - metric: Accuracy
 
 ```shell
-python main.py --task clf --subset 10000 --num_epoch 200 \
-    --batch_size 128 --lr 0.1 --epoch_loss 120 --weights 1.0 --milestone 160
+python main.py --task clf --dataset CIFAR10 \
+    --subset 10000 --num_epoch 200 --batch_size 128 \
+    --lr 0.1 --epoch_loss 120 --weights 1.0 --milestone 160
 ```
 
 #### object detection
@@ -37,7 +41,9 @@ python main.py --task clf --subset 10000 --num_epoch 200 \
 - metric: mAP
 
 ```shell
-python main.py --task detection 
+python main.py --task detection --dataset VOC0712 \
+    --subset None --num_epoch 300 --batch_size 32 \
+    --lr 0.001 --epoch_loss 240 --weights 1.0 --milestone 
 ```
 
 #### human pose estimation
@@ -46,8 +52,9 @@ python main.py --task detection
 - metric: PCKh@0.5
 
 ```shell
-python main.py --task hpe --subset 5000 --num_epoch 125 \
-    --batch_size 6 --lr 0.00025 --epoch_loss 75 --weights 0.0001 --milestone 100
+python main.py --task hpe --dataset mpii \
+    --subset 5000 --num_epoch 125 --batch_size 6 \
+    --lr 0.00025 --epoch_loss 75 --weights 0.0001 --milestone 100
 ```
 
 ### References
