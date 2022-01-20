@@ -1,3 +1,7 @@
+'''
+Reference:
+    https://github.com/bearpaw/pytorch-pose
+'''
 import torch
 import math
 from data.mpii.utils import *

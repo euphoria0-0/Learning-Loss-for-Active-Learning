@@ -2,6 +2,9 @@
 Hourglass network inserted in the pre-activated Resnet
 Use lr=0.01 for current version
 (c) YANG, Wei
++++
+Reference:
+    https://github.com/bearpaw/pytorch-pose
 '''
 import torch.nn as nn
 import torch.nn.functional as F

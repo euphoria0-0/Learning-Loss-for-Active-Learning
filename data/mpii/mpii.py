@@ -1,5 +1,7 @@
-from __future__ import print_function, absolute_import
-
+'''
+Reference:
+    https://github.com/bearpaw/pytorch-pose
+'''
 import os
 import numpy as np
 import json
@@ -132,9 +134,3 @@ class Mpii(data.Dataset):
             return len(self.train_list)
         else:
             return len(self.valid_list)
-
-
-'''def mpii(**kwargs):
-    return Mpii(**kwargs)
-
-mpii.njoints = 16  # ugly but works'''
