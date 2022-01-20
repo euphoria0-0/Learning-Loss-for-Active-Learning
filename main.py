@@ -6,15 +6,14 @@ import argparse
 
 from tensorboardX import SummaryWriter
 
-from data import voc, cifar
-from active_learner import *
+from data import voc, cifar, mpii
 from trainer import *
 from model import *
 
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task', type=str, default='detection', choices=['clf','detection'])
+    parser.add_argument('--task', type=str, default='detection', choices=['clf','detection','hpe'])
 
     parser.add_argument('--gpu_id', type=str, default='0', help='gpu cuda index')
 
@@ -33,7 +32,7 @@ def get_args():
     parser.add_argument('--momentum', type=float, default=0.9, help='SGD momentum')
     parser.add_argument('--gamma', default=0.1, type=float, help='Gamma update for SGD')
     parser.add_argument('--wdecay', type=float, default=5e-4, help='weight decay')
-    parser.add_argument('--milestone', type=list, default=[160], help='number of acquisition')
+    parser.add_argument('--milestone', type=str, default='160', help='number of acquisition')
 
     parser.add_argument('--epoch_loss', type=int, default=240,
                         help='After 120 epochs, stop the gradient from the loss prediction module propagated to the target model')
@@ -54,6 +53,8 @@ def get_args():
                         help='Detection confidence threshold')
     parser.add_argument('--top_k', default=5, type=int,
                         help='Further restrict the number of predictions to parse')
+    parser.add_argument('--sigma-decay', type=float, default=0,
+                        help='Sigma decay rate for each epoch.')
 
     args = parser.parse_args()
     return args
@@ -67,6 +68,10 @@ def get_dataset(args):
     elif args.task == 'detection':
         dataset = voc.get_voc_data(args)
         args.nTrain, args.nClass = len(dataset['train']), 21
+    elif args.task == 'hpe':
+        dataset = mpii.get_mpii_data(args)
+        args.nTrain = 14679
+        args.nPoses, args.nJoint = 22246, dataset['train'].njoints
     return dataset, args
 
 def get_model(args):
@@ -74,6 +79,10 @@ def get_model(args):
         model = get_resnet_model(args)
     elif args.task == 'detection':
         model = get_ssd_model(args)
+    elif args.task == 'hpe':
+        model = get_shn_model(args)
+    if ',' in args.gpu_id:
+        model = model_parallel(model)
     return model
 
 def get_inference_model(args, trained_model):
@@ -82,6 +91,10 @@ def get_inference_model(args, trained_model):
     elif args.task == 'detection':
         test_model = get_ssd_model(args, phase='test')
         model = {'backbone': test_model['backbone'], 'module': trained_model['module']}
+    elif args.task == 'hpe':
+        model = trained_model
+    if ',' in args.gpu_id:
+        model = model_parallel(model)
     return model
 
 def get_trainer(args, model, dataloaders, writer):
@@ -89,22 +102,27 @@ def get_trainer(args, model, dataloaders, writer):
         trainer = ClassificationTrainer(model, dataloaders, writer, args)
     elif args.task == 'detection':
         trainer = DetectionTrainer(model, dataloaders, writer, args)
+    elif args.task == 'hpe':
+        trainer = HPETrainer(model, dataloaders, writer, args)
     return trainer
 
 
 if __name__ == '__main__':
     args = get_args()
-    print('=' * 100)
+    args.save_path += args.task + '/'
+    args.milestone = list(map(int, args.milestone.split(',')))
+    print('=' * 90)
     print('Arguments = ')
     for arg in vars(args):
         print('\t' + arg + ':', getattr(args, arg))
-    print('=' * 100)
+    print('=' * 90)
 
     args.device = torch.device(f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu")
     torch.cuda.set_device(args.device)  # change allocation of current GPU
     print(f'Current cuda device: {torch.cuda.current_device()}')
 
     torch.set_default_tensor_type('torch.FloatTensor')
+
 
     os.makedirs(args.save_path, exist_ok=True)
     writer = SummaryWriter()
@@ -123,7 +141,7 @@ if __name__ == '__main__':
         for round in range(len(args.query_size)):
             nLabeled = args.query_size[round]
             nQuery = args.query_size[round + 1] - args.query_size[round] if round < len(args.query_size) - 1 else 'X'
-            print(f'> ROUND {round + 1}/{len(args.query_size)} Labeled {nLabeled} Query {nQuery}')
+            print(f'> ROUND {round + 1}/{len(args.query_size)} nLabeled {nLabeled} nQuery {nQuery}')
 
             # set model
             model = get_model(args)

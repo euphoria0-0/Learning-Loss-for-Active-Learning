@@ -21,7 +21,7 @@ class ActiveLearner:
 
     def _init_setting(self):
         total_indices = np.arange(self.nTrain)
-        print(self.nTrain, self.init_size)
+        print(f'nTrain: {self.nTrain} nInit: {self.init_size}')
         self.labeled_indices = np.random.choice(total_indices, self.init_size, replace=False).tolist()
         self.unlabeled_indices = list(set(total_indices) - set(self.labeled_indices))
         self.dataloaders = self._get_dataloaders()
@@ -32,7 +32,7 @@ class ActiveLearner:
                                 sampler=SubsetRandomSampler(self.labeled_indices)),
             'unlabeled': DataLoader(self.dataset['unlabeled'], **self.loader_args,
                                     sampler=SubsetRandomSampler(self.unlabeled_indices)),
-            'test': DataLoader(self.dataset['test'], batch_size=1000, pin_memory=True, shuffle=True)
+            'test': DataLoader(self.dataset['test'], **self.loader_args)
         }
         return dataloaders
 
@@ -64,10 +64,8 @@ class RandomSampling(ActiveLearner):
 class LearningLoss(ActiveLearner):
     def __init__(self, dataset, args):
         super().__init__(dataset, args)
-        if args.task == 'clf':
-            self.subset = args.subset
-        elif args.task == 'detection':
-            self.subset = None
+        self.subset = args.subset if args.task != 'detection' else None
+
 
     def query(self, nQuery, model):
         if self.subset is not None:
@@ -81,8 +79,8 @@ class LearningLoss(ActiveLearner):
 
         uncertainty = torch.tensor([])
         with torch.no_grad():
-            for inputs, _ in tqdm(unlabeled_loader, desc='> inference of unlabeled data'):
-                inputs = inputs.to(self.device)
+            for data in tqdm(unlabeled_loader, desc='> inference of unlabeled data'):
+                inputs = data[0].to(self.device)
 
                 _ = model['backbone'](inputs)
                 features = model['backbone'].get_features()

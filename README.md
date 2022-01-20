@@ -26,18 +26,35 @@ python main.py --task {clf OR detection}
 - model: ResNet
 - metric: Accuracy
 
+```shell
+python main.py --task clf --subset 10000 --num_epoch 200 \
+    --batch_size 128 --lr 0.1 --epoch_loss 120 --weights 1.0 --milestone 160
+```
+
 #### object detection
 - dataset: PASCAL VOC2007 & 2012
 - model: SSD (Single Shot Multibox Detector)
 - metric: mAP
 
+```shell
+python main.py --task detection 
+```
+
 #### human pose estimation
-- [ ] TODO
+- dataset: MPII
+- model: SHN (Stacked Hourglass Networks)
+- metric: PCKh@0.5
+
+```shell
+python main.py --task hpe --subset 5000 --num_epoch 125 \
+    --batch_size 6 --lr 0.00025 --epoch_loss 75 --weights 0.0001 --milestone 100
+```
 
 ### References
 
 - https://github.com/Mephisto405/Learning-Loss-for-Active-Learning
 - https://github.com/amdegroot/ssd.pytorch
+- https://github.com/bearpaw/pytorch-pose
 - https://github.com/kuangliu/pytorch-cifar
 
 

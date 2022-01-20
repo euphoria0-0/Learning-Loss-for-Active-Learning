@@ -38,19 +38,16 @@ class LossNet(nn.Module):
         super(LossNet, self).__init__()
 
         self.GAP = []
-        if task == 'clf':
-            for feature_size in feature_sizes:
-                self.GAP.append(nn.AvgPool2d(feature_size))
-
-        elif task == 'detection':
-            for feature_size in feature_sizes:
+        for feature_size in feature_sizes:
+            if task == 'detection':
                 self.GAP.append(nn.AdaptiveAvgPool2d((1, 1)))
+            else:
+                self.GAP.append(nn.AvgPool2d(feature_size))
+        self.GAP = nn.ModuleList(self.GAP)
 
         self.FC = []
         for num_channel in num_channels:
             self.FC.append(nn.Linear(num_channel, interm_dim))
-
-        self.GAP = nn.ModuleList(self.GAP)
         self.FC = nn.ModuleList(self.FC)
 
         self.linear = nn.Linear(len(num_channels) * interm_dim, 1)
