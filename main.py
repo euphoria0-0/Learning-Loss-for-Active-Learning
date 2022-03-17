@@ -18,7 +18,7 @@ def get_args():
     parser.add_argument('--gpu_id', type=str, default='0', help='gpu cuda index')
 
     parser.add_argument('--dataset', help='dataset', type=str, default='VOC0712')
-    parser.add_argument('--dataset_path', help='data path', type=str, default='D:/data/detection/VOCdevkit')
+    parser.add_argument('--dataset_path', help='data path', type=str, default='D:/dataset/detection/VOCdevkit')
     parser.add_argument('--save_path', help='save path', type=str, default='./weights/')
 
     parser.add_argument('--num_trial', type=int, default=1, help='number of trials')
@@ -38,7 +38,7 @@ def get_args():
                         help='After 120 epochs, stop the gradient from the loss prediction module propagated to the target model')
     parser.add_argument('--margin', type=float, default=1.0, help='MARGIN')
     parser.add_argument('--weights', type=float, default=1.0, help='weight')
-    parser.add_argument('--subset', type=int, default=10000, help='subset for learning loss')
+    parser.add_argument('--subset', type=int, default=None, help='subset for learning loss')
 
     parser.add_argument('--start_iter', default=0, type=int, help='Resume training at this iter')
     parser.add_argument('--max_iter', type=int, default=120000, help='')
