@@ -10,6 +10,9 @@ torchvision
 tensorboardX
 matplotlib
 tqdm
+cv2
+imageio
+imutils
 ```
 
 ### Usage
