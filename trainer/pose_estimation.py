@@ -199,10 +199,10 @@ class HPETrainer:
                 batch_time.update(time.time() - end)
                 end = time.time()
 
-        print(' TestAcc: {:.4f}'.format(acces.avg))
+        print('TestPCK@0.5: {:.4f}'.format(acces.avg))
 
         self.writer.add_scalars('Test', {
-            'Acc': acces.avg
+            'PCK@0.5': acces.avg
         }, round)
 
         return losses.avg, acces.avg, predictions

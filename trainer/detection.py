@@ -94,24 +94,20 @@ class DetectionTrainer:
             self.writer.add_scalars('Loss', {
                 'train': loss,
             }, epoch)
-            # self.writer.add_scalars('Acc', {
-            #     'train': train_acc,
-            #     'valid': val_acc
-            # }, epoch)
 
             if iteration % 10000 == 0:
-                print('timer: %.4f sec.' % (t1 - t0))
+                #print('timer: %.4f sec.' % (t1 - t0))
                 #print('iter ' + repr(iteration) + ' || Loss: %.4f ||' % (loss.data), end=' ')
                 print('Epoch {} Iter {}/{} TrainLoss {:.6f}'.format(epoch, iteration, self.args.max_iter, loss), end=' ')
 
                 self.writer.flush()
 
-            if iteration != 0 and iteration % 5000 == 0:
+            if iteration != 0 and iteration % 50000 == 0:
                 torch.save(self.model['backbone'].state_dict(), f'weights/ssd300_VOC_{iteration}.pth')
 
             torch.cuda.empty_cache()
 
-        torch.save(self.model['backbone'].state_dict(), f'{self.args.save_path}VOC.pth')
+        #torch.save(self.model['backbone'].state_dict(), f'{self.args.save_path}VOC.pth')
 
         #return train_acc
 
