@@ -152,6 +152,7 @@ if __name__ == '__main__':
             # train
             trainer = get_trainer(args, model, dataloaders, writer)
             trainer.train()
+            torch.save(trainer.model['backbone'].state_dict(), f'{args.save_path}model_round{round}.pth')
 
             # test / inference
             inference_model = get_inference_model(args, trainer.model)
