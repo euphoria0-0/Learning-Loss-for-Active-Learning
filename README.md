@@ -45,7 +45,7 @@ python main.py --task clf --dataset CIFAR10 \
 
 ```shell
 python main.py --task detection --dataset VOC0712 \
-    --subset None --num_epoch 300 --batch_size 32 \
+    --num_epoch 300 --batch_size 32 \
     --lr 0.001 --epoch_loss 240 --weights 1.0 --milestone 240 
 ```
 
