@@ -56,8 +56,8 @@ python main.py --task detection --dataset VOC0712 \
 
 ```shell
 python main.py --task hpe --dataset mpii \
-    --subset 5000 --num_epoch 125 --batch_size 6 \
-    --lr 0.00025 --epoch_loss 75 --weights 0.0001 --milestone 100
+    --subset 5000 --num_epoch 125 --batch_size 6 --wdecay 0 \
+    --lr 0.00025 --epoch_loss 75 --weights 0.0001 --milestone 100 
 ```
 
 ### References

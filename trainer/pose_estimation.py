@@ -45,7 +45,7 @@ class HPETrainer:
 
             # train for one epoch
             train_loss, train_acc = self.train_epoch(debug, flip)
-            print('Epoch {}/{} TrainLoss {:.6f} TrainAcc {:.4f}'.format(epoch + 1, self.num_epoch, train_loss, train_acc))
+            print('Epoch {}/{} TrainLoss {:.6f} TrainPCK@0.5 {:.4f}'.format(epoch + 1, self.num_epoch, train_loss, train_acc))
 
             self.lr_scheduler['backbone'].step()
             self.lr_scheduler['module'].step()
