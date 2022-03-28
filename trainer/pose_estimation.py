@@ -205,4 +205,4 @@ class HPETrainer:
             'PCK@0.5': acces.avg
         }, round)
 
-        return losses.avg, acces.avg, predictions
+        return acces.avg
