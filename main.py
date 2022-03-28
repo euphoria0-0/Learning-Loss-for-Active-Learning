@@ -3,7 +3,7 @@ Learning Loss for Active Learning
 '''
 import os
 import argparse
-
+import time
 from tensorboardX import SummaryWriter
 
 from data import voc, cifar, mpii
@@ -111,10 +111,15 @@ if __name__ == '__main__':
     args = get_args()
     args.save_path += args.task + '/'
     args.milestone = list(map(int, args.milestone.split(',')))
+
+    os.makedirs(args.save_path + 'weights/', exist_ok=True)
+    filename = args.save_path + 'result_' + time.strftime('%Y%m%d-%H%M%S', time.localtime())
+    result_file = open(filename, 'w')
     print('=' * 90)
     print('Arguments = ')
     for arg in vars(args):
         print('\t' + arg + ':', getattr(args, arg))
+        result_file.write(f' {arg} = {getattr(args, arg)}\n')
     print('=' * 90)
 
     args.device = torch.device(f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu")
@@ -123,8 +128,7 @@ if __name__ == '__main__':
 
     torch.set_default_tensor_type('torch.FloatTensor')
 
-
-    os.makedirs(args.save_path, exist_ok=True)
+    result_file.write('Trial,Round,TestAcc\n')
     writer = SummaryWriter()
 
     # load data
@@ -156,8 +160,13 @@ if __name__ == '__main__':
 
             # test / inference
             inference_model = get_inference_model(args, trainer.model)
-            trainer.test(inference_model, round=round, phase='test')
+            test_acc = trainer.test(inference_model, round=round, phase='test')
 
             # query
             if round < len(args.query_size) - 1:
                 active_learner.query(nQuery, inference_model)
+
+            # save results
+            result_file.write('{},{},{:.6f}'.format(trial, round, test_acc))
+
+    result_file.close()
