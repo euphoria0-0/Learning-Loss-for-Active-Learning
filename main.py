@@ -6,9 +6,9 @@ import argparse
 import time
 from tensorboardX import SummaryWriter
 
-from data import voc, cifar, mpii
-from trainer import *
-from model import *
+from src.data import voc, cifar, mpii
+from src.trainer import *
+from src.model import *
 
 
 def get_args():
@@ -19,7 +19,7 @@ def get_args():
 
     parser.add_argument('--dataset', help='dataset', type=str, default='VOC0712')
     parser.add_argument('--dataset_path', help='data path', type=str, default='D:/dataset/detection/VOCdevkit')
-    parser.add_argument('--save_path', help='save path', type=str, default='./weights/')
+    parser.add_argument('--save_path', help='save path', type=str, default='./results/')
 
     parser.add_argument('--num_trial', type=int, default=1, help='number of trials')
     parser.add_argument('--num_epoch', type=int, default=300, help='number of epochs')
@@ -113,6 +113,7 @@ if __name__ == '__main__':
     args.milestone = list(map(int, args.milestone.split(',')))
 
     os.makedirs(args.save_path + 'weights/', exist_ok=True)
+    os.makedirs(args.save_path + 'runs/', exist_ok=True)
     filename = args.save_path + 'result_' + time.strftime('%Y%m%d-%H%M%S', time.localtime())
     result_file = open(filename, 'w')
     print('=' * 90)
@@ -121,6 +122,7 @@ if __name__ == '__main__':
         print('\t' + arg + ':', getattr(args, arg))
         result_file.write(f' {arg} = {getattr(args, arg)}\n')
     print('=' * 90)
+    result_file.write('=' * 40 + '\n')
 
     args.device = torch.device(f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu")
     torch.cuda.set_device(args.device)  # change allocation of current GPU
@@ -129,7 +131,7 @@ if __name__ == '__main__':
     torch.set_default_tensor_type('torch.FloatTensor')
 
     result_file.write('Trial,Round,TestAcc\n')
-    writer = SummaryWriter()
+    writer = SummaryWriter(args.save_path + 'runs/')
 
     # load data
     dataset, args = get_dataset(args)
