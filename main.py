@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     os.makedirs(args.save_path + 'weights/', exist_ok=True)
     os.makedirs(args.save_path + 'runs/', exist_ok=True)
-    filename = args.save_path + 'result_' + time.strftime('%Y%m%d-%H%M%S', time.localtime())
+    filename = args.save_path + 'result_' + time.strftime('%Y%m%d-%H%M%S', time.localtime()) + '.txt'
     result_file = open(filename, 'w')
     print('=' * 90)
     print('Arguments = ')
