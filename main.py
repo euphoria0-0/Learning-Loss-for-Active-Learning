@@ -4,7 +4,7 @@ Learning Loss for Active Learning
 import os
 import argparse
 import time
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 from src.data import voc, cifar, mpii
 from src.trainer import *
